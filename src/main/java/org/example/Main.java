@@ -156,17 +156,77 @@ public class Main {
             System.out.println("Bearer Token: " + bearerToken);
 
 
+
             orderRegistrationBody(bearerToken); // 오더등록
-           // viewOrdersQueryParams(bearerToken); // 전송된오더조회
-            try {
-                fetchResultsBody(bearerToken);      // 결과조회
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
+            viewOrdersQueryParams(bearerToken); // 전송된오더조회
+            cancelOrdersBody(bearerToken);      // 전송한 오더 취소
+             //fetchResultsBody(bearerToken);      // 결과조회
             // updateResultStateBody(bearerToken); // 결과 상태 업데이트
             //cancelOrdersBody(bearerToken);      // 전송한 오더 취소
 
+            JSONObject jsonObject = new JSONObject();    //전문 root
+            JSONObject patientInfo = new JSONObject();  //환자정보
+            JSONObject testInfo = new JSONObject();     //검사정보
 
+            // 환자 정보 배열
+            JSONArray patientInfosArray = new JSONArray();
+
+            // 각 환자 정보에 대한 검사 정보 생성
+            JSONArray testInfosArray = new JSONArray();
+
+
+            patientInfo.put("orderDate", "2024-01-23");
+            patientInfo.put("orderNo", "1234567890");
+            patientInfo.put("chartNo", "3345455");
+            patientInfo.put("patientName", "홍길동");
+            patientInfo.put("birthDate", "1985-01-01");
+            patientInfo.put("identificationNo", "8501011");
+            patientInfo.put("gender", "M");
+            patientInfo.put("age", 38);
+            patientInfo.put("dept", "DS");
+            patientInfo.put("ward", "1병동");
+            patientInfo.put("doctorName", "김의사");
+            patientInfo.put("sampleDrawDateTime", "2024-01-23 15:15:40");
+
+            testInfosArray = new JSONArray();
+            testInfo.put("sampleNo", "1234522");
+            testInfo.put("testCode", "GOT");
+            testInfo.put("testName", "s-got");
+            testInfo.put("sampleCode", "02");
+            testInfo.put("sampleName", "SST Serum");
+            testInfo.put("comment", "코멘트 입니다");
+            testInfo.put("sequence", 1);
+            testInfo.put("orderDateTime", "2024-01-23 15:11:25.120");
+
+            testInfosArray.add(testInfo);
+
+            testInfo = new JSONObject();
+            testInfo.put("sampleNo", "1234522");
+            testInfo.put("testCode", "GPT");
+            testInfo.put("testName", "s-gpt");
+            testInfo.put("sampleCode", "02");
+            testInfo.put("sampleName", "SST Serum");
+            testInfo.put("comment", "");
+            testInfo.put("sequence", 2);
+            testInfo.put("orderDateTime", "2024-01-23 15:11:25.122");
+
+            testInfosArray.add(testInfo);
+
+            patientInfo.put("testInfos", testInfosArray);
+            // patientInfo를 배열에 추가
+            patientInfosArray.add(patientInfo);
+
+
+            // 최종 JSON 객체에 환자 정보 배열 추가
+            jsonObject.put("patientInfos", patientInfosArray);
+
+            System.out.println("--[최상위 구간]------------------------------------------------------[시작]-");
+            jsonObject.put("institutionNo", "12345678");
+            jsonObject.put("hospitalCode", "9999999");
+
+            System.out.println("--[최상위 구간]------------------------------------------------------[끝끝]-");
+
+            System.out.println(jsonObject.toJSONString());
 
         } else {
             System.out.println("로그인 실패. Bearer Token을 가져올 수 없습니다.");
@@ -210,6 +270,7 @@ public class Main {
         String urlString = "https://testinterface.smlab.co.kr/ocs/integrationInterface/orders";  // 다른 API URL
 
         // 요청 파라미터 (JSON 형식)
+        /*
         String jsonInputString = "{" +
                 "\"institutionNo\": \"12345678\"," +
                 "\"hospitalCode\": \"9999999\"," +
@@ -252,6 +313,46 @@ public class Main {
                 "}" +
                 "]" +
                 "}";
+         */
+
+        String jsonInputString = "{"
+                + "\"patientInfos\": [{"
+                + "    \"patientName\": \"홍길동\","
+                + "    \"orderNo\": \"1234567890\","
+                + "    \"testInfos\": [{"
+                + "        \"sampleName\": \"SST Serum\","
+                + "        \"orderDateTime\": \"2024-01-23 15:11:25.120\","
+                + "        \"sequence\": 1,"
+                + "        \"testCode\": \"GOT\","
+                + "        \"sampleCode\": \"02\","
+                + "        \"comment\": \"코멘트 입니다\","
+                + "        \"sampleNo\": \"1234522\","
+                + "        \"testName\": \"s-got\""
+                + "    }, {"
+                + "        \"sampleName\": \"SST Serum\","
+                + "        \"orderDateTime\": \"2024-01-23 15:11:25.122\","
+                + "        \"sequence\": 2,"
+                + "        \"testCode\": \"GPT\","
+                + "        \"sampleCode\": \"02\","
+                + "        \"comment\": \"\","
+                + "        \"sampleNo\": \"1234522\","
+                + "        \"testName\": \"s-gpt\""
+                + "    }],"
+                + "    \"gender\": \"M\","
+                + "    \"dept\": \"DS\","
+                + "    \"ward\": \"1병동\","
+                + "    \"sampleDrawDateTime\": \"2024-01-23 15:15:40\","
+                + "    \"birthDate\": \"1985-01-01\","
+                + "    \"chartNo\": \"3345455\","
+                + "    \"doctorName\": \"김의사\","
+                + "    \"identificationNo\": \"8501011\","
+                + "    \"orderDate\": \"2024-01-23\","
+                + "    \"age\": 38"
+                + "}],"
+                + "\"institutionNo\": \"12345678\","
+                + "\"hospitalCode\": \"9999999\""
+                + "}";
+
 
         // 오더 등록 API 호출
         String responseBody = sendRequest(urlString, "POST", "application/json", bearerToken, jsonInputString);
@@ -264,7 +365,7 @@ public class Main {
         String urlString = "https://testinterface.smlab.co.kr/ocs/integrationInterface/orders";  // 다른 API URL
 
         // 쿼리 파라미터로 URL을 수정
-        String urlWithParams = urlString + "?hospitalCode=9999999&beginDate=2024-01-23&endDate=2024-01-24";
+        String urlWithParams = urlString + "?hospitalCode=9999999&beginDate=2024-01-01&endDate=2024-03-30";
 
         // 전송된 오더 조회 API 호출
         String responseBody = sendRequest(urlWithParams, "GET", "application/json", bearerToken, null);
@@ -345,7 +446,7 @@ public class Main {
                 "\"hospitalCode\": \"9999999\"," +
                 "\"testInfos\": [" +
                 "{" +
-                "\"smlRegistDate\": \"2024-01-24\"," +
+                "\"smlRegistDate\": \"2024-01-23\"," +
                 "\"smlRegistNo\": \"88001\"," +
                 "\"smlReportDate\": \"2024-01-26\"," +
                 "\"smlTestCode\": \"11001\"," +
@@ -372,14 +473,14 @@ public class Main {
                 "\"hospitalCode\": \"9999999\"," +
                 "\"cancelOrders\": [" +
                 "{" +
-                "\"orderDate\": \"2024-01-24\"," +
+                "\"orderDate\": \"2024-01-23\"," +
                 "\"orderNo\": \"1234567890\"," +
                 "\"chartNo\": \"3345455\"," +
                 "\"patientName\": \"홍길동\"," +
                 "\"testCode\": \"GOT\"" +
                 "}," +
                 "{" +
-                "\"orderDate\": \"2024-01-24\"," +
+                "\"orderDate\": \"2024-01-23\"," +
                 "\"orderNo\": \"1234567890\"," +
                 "\"chartNo\": \"3345455\"," +
                 "\"patientName\": \"홍길동\"," +
