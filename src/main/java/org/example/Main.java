@@ -722,7 +722,7 @@ public class Main {
         System.out.println("API Response: " + responseBody);
 
         if (responseBody == null || responseBody.trim().isEmpty() || responseBody.equals("{}")) {
-            return;
+            return ;
         }
 
         JSONParser parser = new JSONParser();
