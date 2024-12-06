@@ -24,6 +24,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.*;
+
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 
 /*
 import net.sf.json.JSONObject;
@@ -149,7 +156,8 @@ public class Main {
 
     public static void main(String[] args) {
         // 로그인 후 Bearer Token을 얻음
-        String bearerToken = getSmlabLogin();
+        String bearerToken ="1";
+        //bearerToken = getSmlabLogin();
 
 
         if (bearerToken != null) {
@@ -157,81 +165,146 @@ public class Main {
 
 
 
-            orderRegistrationBody(bearerToken); // 오더등록
-            viewOrdersQueryParams(bearerToken); // 전송된오더조회
-            cancelOrdersBody(bearerToken);      // 전송한 오더 취소
+            //orderRegistrationBody(bearerToken); // 오더등록
+            //viewOrdersQueryParams(bearerToken); // 전송된오더조회
+            //cancelOrdersBody(bearerToken);      // 전송한 오더 취소
              //fetchResultsBody(bearerToken);      // 결과조회
             // updateResultStateBody(bearerToken); // 결과 상태 업데이트
             //cancelOrdersBody(bearerToken);      // 전송한 오더 취소
 
-            JSONObject jsonObject = new JSONObject();    //전문 root
-            JSONObject patientInfo = new JSONObject();  //환자정보
-            JSONObject testInfo = new JSONObject();     //검사정보
+            // 데이터 1 (data1, data2, data3 등 동일 구조)
+            final Map<String, Object> data1 = createData("2024-01-24", "1234567890", "3345455", "홍길동","GOT", "s-got", 1, "코멘트 입니다");
+            final Map<String, Object> data2 = createData("2024-01-24", "1234567890", "3345455", "홍길동","GPT", "s-gpt", 2, "별다른 코멘트");
+            final Map<String, Object> data3 = createData("2024-01-24", "1234567890", "3345455", "홍길동","ALP", "s-alp", 3, "");
+            final Map<String, Object> data4 = createData("2024-01-24", "1234567890", "3345455", "김길동","GOT", "s-got", 1, "코멘트 입니다");
+            final Map<String, Object> data5 = createData("2024-01-24", "1234567890", "3345455", "김길동","GPT", "s-gpt", 2, "별다른 코멘트");
+            final Map<String, Object> data6 = createData("2024-01-24", "1234567890", "3345455", "박길동","ALP", "s-alp", 1, "");
+            final Map<String, Object> data7 = createData("2024-01-24", "1234567890", "3345455", "최길동","ALP", "s-alp", 1, "");
 
-            // 환자 정보 배열
-            JSONArray patientInfosArray = new JSONArray();
+            int cnt1 =0, cnt2=0 , cnt3=0 , cnt4=0 , cnt5=0 , cnt6 =0 ;
 
-            // 각 환자 정보에 대한 검사 정보 생성
-            JSONArray testInfosArray = new JSONArray();
+            // 3개의 데이터를 하나의 리스트에 담기
+            List<Map<String, Object>> dataList = new ArrayList<>();
+            dataList.add(data1);
+            dataList.add(data2);
+            dataList.add(data3);
+            dataList.add(data4);
+            dataList.add(data5);
+            dataList.add(data6);
+            dataList.add(data7);
 
-
-            patientInfo.put("orderDate", "2024-01-23");
-            patientInfo.put("orderNo", "1234567890");
-            patientInfo.put("chartNo", "3345455");
-            patientInfo.put("patientName", "홍길동");
-            patientInfo.put("birthDate", "1985-01-01");
-            patientInfo.put("identificationNo", "8501011");
-            patientInfo.put("gender", "M");
-            patientInfo.put("age", 38);
-            patientInfo.put("dept", "DS");
-            patientInfo.put("ward", "1병동");
-            patientInfo.put("doctorName", "김의사");
-            patientInfo.put("sampleDrawDateTime", "2024-01-23 15:15:40");
-
-            testInfosArray = new JSONArray();
-            testInfo.put("sampleNo", "1234522");
-            testInfo.put("testCode", "GOT");
-            testInfo.put("testName", "s-got");
-            testInfo.put("sampleCode", "02");
-            testInfo.put("sampleName", "SST Serum");
-            testInfo.put("comment", "코멘트 입니다");
-            testInfo.put("sequence", 1);
-            testInfo.put("orderDateTime", "2024-01-23 15:11:25.120");
-
-            testInfosArray.add(testInfo);
-
-            testInfo = new JSONObject();
-            testInfo.put("sampleNo", "1234522");
-            testInfo.put("testCode", "GPT");
-            testInfo.put("testName", "s-gpt");
-            testInfo.put("sampleCode", "02");
-            testInfo.put("sampleName", "SST Serum");
-            testInfo.put("comment", "");
-            testInfo.put("sequence", 2);
-            testInfo.put("orderDateTime", "2024-01-23 15:11:25.122");
-
-            testInfosArray.add(testInfo);
-
-            patientInfo.put("testInfos", testInfosArray);
-            // patientInfo를 배열에 추가
-            patientInfosArray.add(patientInfo);
+            // 최종 구조 만들기
+            Map<String, Object> result = new HashMap<>();
 
 
-            // 최종 JSON 객체에 환자 정보 배열 추가
-            jsonObject.put("patientInfos", patientInfosArray);
+            // 환자 정보들 (각 환자 정보를 담을 리스트)
+            List<Map<String, Object>> patientInfos = new ArrayList<>();
 
-            System.out.println("--[최상위 구간]------------------------------------------------------[시작]-");
-            jsonObject.put("institutionNo", "12345678");
-            jsonObject.put("hospitalCode", "9999999");
+            // 환자 정보를 그룹화할 Map (orderDate, orderNo, chartNo, patientName으로 그룹화)
+            Map<String, Map<String, Object>> patientGroups = new HashMap<>();
 
-            System.out.println("--[최상위 구간]------------------------------------------------------[끝끝]-");
+            // 환자 정보 그룹화
 
-            System.out.println(jsonObject.toJSONString());
+            for (Map<String, Object> test : dataList) {
+                // 환자 정보의 key를 만들어서 그룹화 (orderDate + orderNo + chartNo + patientName)
+                String key = test.get("orderDate") + "_" + test.get("orderNo") + "_" + test.get("chartNo") + "_" + test.get("patientName");
+
+                // 만약 해당 그룹이 존재하지 않으면 새로 생성
+                patientGroups.putIfAbsent(key, new HashMap<>());
+                Map<String, Object> patientInfo = patientGroups.get(key);
+
+                // 환자 기본 정보를 추가 (첫 번째 검사 정보를 기준으로 추가)
+                if (patientInfo.isEmpty()) {
+                    System.out.println();
+                    System.out.println("patientInfo 생성 " + cnt1++ );
+                    patientInfo.put("orderDate"         , test.get("orderDate")); // 병원 처방일자 (orderDate) (필수)
+                    patientInfo.put("orderNo"           , test.get("orderNo")); // 병원 접수번호 (orderNo) (필수)
+                    patientInfo.put("chartNo"           , test.get("chartNo")); // 차트번호 (chartNo)
+                    patientInfo.put("patientName"       , test.get("patientName")); // 수진자명 (patientName) (필수)
+                    patientInfo.put("birthDate"         , test.get("birthDate")); // 생년월일 (birthDate)
+                    patientInfo.put("identificationNo"  , test.get("identificationNo")); // 주민등록번호 (identificationNo)
+                    patientInfo.put("gender"            , test.get("gender")); // 성별 (gender)
+                    patientInfo.put("age"               , test.get("age")); // 나이 (age)
+                    patientInfo.put("dept"              , test.get("dept")); // 진료과 (dept)
+                    patientInfo.put("ward"              , test.get("ward")); // 병동 (ward)
+                    patientInfo.put("doctorName"        , test.get("doctorName")); // 진료의 (doctorName)
+                    patientInfo.put("sampleDrawDateTime", test.get("sampleDrawDateTime")); // 검체채취일시 (sampleDrawDateTime)
+                    patientInfo.put("testInfos", new ArrayList<Map<String, Object>>());
+                    cnt2 = 0;
+                }
+
+
+                System.out.println("검사 정보 추가 " + cnt2++);
+                // 검사 정보 추가
+                List<Map<String, Object>> testInfos = (List<Map<String, Object>>) patientInfo.get("testInfos");
+                Map<String, Object> testInfo = new HashMap<>();
+
+
+                testInfo.put("sampleNo"      , test.get("sampleNo")); // 병원 검체 번호 (sampleNo)
+                testInfo.put("testCode"      , test.get("testCode")); // 병원 검사 코드 (testCode) (필수)
+                testInfo.put("testName"      , test.get("testName")); // 병원 검사명 (testName) (필수)
+                testInfo.put("sampleCode"    , test.get("sampleCode")); // 병원 검체 코드 (sampleCode)
+                testInfo.put("sampleName"    , test.get("sampleName")); // 병원 검체명 (sampleName)
+                testInfo.put("comment"       , test.get("comment")); // 검사 코멘트 (comment)
+                testInfo.put("sequence"      , test.get("sequence")); // 순번 (sequence) (값이 없으면 0)
+                testInfo.put("orderDateTime" , test.get("orderDateTime")); // 오더 생성일시 (orderDateTime)
+
+
+                testInfos.add(testInfo);
+
+            }
+
+
+            // 그룹화된 환자 정보를 patientInfos에 추가
+            patientInfos.addAll(patientGroups.values());
+
+            result.put("institutionNo", data1.get("institutionNo"));
+            result.put("hospitalCode", data1.get("hospitalCode"));
+
+            result.put("patientInfos", patientInfos);
+
+            // JSON 문자열로 변환
+            Gson gson = new GsonBuilder().setPrettyPrinting().create(); // Pretty printing for better readability
+            String jsonString = gson.toJson(result);
+            System.out.println(jsonString);
 
         } else {
             System.out.println("로그인 실패. Bearer Token을 가져올 수 없습니다.");
         }
     }
+
+
+    // 공통 데이터 생성 함수
+    private static Map<String, Object> createData(String orderDate,String orderNo, String chartNo,String patientName, String testCode, String testName, int sequence, String comment) {
+        Map<String, Object> data = new HashMap<>();
+        // root
+        data.put("institutionNo", "12345678");
+        data.put("hospitalCode", "9999999");
+        // patientInfos
+        data.put("orderDate", orderDate);
+        data.put("orderNo", orderNo);
+        data.put("chartNo", chartNo);
+        data.put("patientName", patientName);
+        data.put("birthDate", "1985-01-01");
+        data.put("identificationNo", "8501011");
+        data.put("gender", "M");
+        data.put("age", 38);
+        data.put("dept", "DS");
+        data.put("ward", "1병동");
+        data.put("doctorName", "김의사");
+        data.put("sampleDrawDateTime", "2024-01-24 15:15:40");
+        // testInfos
+        data.put("sampleNo", "1234522");
+        data.put("testCode", testCode);  // 매개변수로 전달받은 검사 코드
+        data.put("testName", testName);  // 매개변수로 전달받은 검사명
+        data.put("sampleCode", "2");
+        data.put("sampleName", "SST Serum");
+        data.put("comment", comment);  // 매개변수로 전달받은 코멘트
+        data.put("sequence", sequence);  // 매개변수로 전달받은 순번
+        data.put("orderDateTime", "2024-01-24 15:11:25");
+        return data;
+    }
+
 
     public static String getSmlabLogin() {
         System.out.println("getSmlabLogin - 로그인 토큰발행");
